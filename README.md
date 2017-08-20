@@ -25,7 +25,7 @@ docker build -t myapp .
 
 + run the app
 ```
-docker run -p 8080:8080
+docker run -p 8080:8080 myapp
 ```
 
 + can push to registry if you want (change myapp)
