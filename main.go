@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
@@ -13,10 +14,12 @@ import (
 func main() {
 	rawLorenz := createLorenzData()
 	formattedLorenz := formatPlotData(rawLorenz)
-	createSVG(formattedLorenz)
+	err := createSVG(formattedLorenz, "Lorenz sample", "Y", "Z")
+	if err != nil {
+		log.Fatalf("Create sample plot failed with error: %v", err)
+	}
 }
 
-// The function to calculate
 func lorenz(t float64, y []float64) []float64 {
 	sigma := float64(10)
 	beta := float64(8 / 3)
@@ -31,16 +34,13 @@ func lorenz(t float64, y []float64) []float64 {
 }
 
 func createLorenzData() [][]float64 {
-	// SIR Start Values
 	initCond := []float64{-8, 8, 27}
 
-	// Do the calculation
-	y := ode.EulerForward(.001, .001, 100, initCond, lorenz)
+	y := ode.RungeKutta4(.001, .001, 100, initCond, lorenz)
 
-	// Output the results to the console
-	for _, val := range y {
-		fmt.Println(val)
-	}
+	// for _, val := range y {
+	// 	fmt.Println(val)
+	// }
 
 	return y
 }
@@ -52,30 +52,31 @@ func formatPlotData(data [][]float64) plotter.XYs {
 		pts[i].Y = data[i][2]
 		// pts[i].Z = data[i][2]
 	}
-
 	return pts
 }
 
-func createSVG(data plotter.XYs) {
+func createSVG(data plotter.XYs, title, axisOne, axisTwo string) error {
 	p, err := plot.New()
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("Create new plot error: %v", err)
 	}
 
-	p.Title.Text = "Plotutil example"
-	p.X.Label.Text = "X"
-	p.Y.Label.Text = "Y"
+	p.Title.Text = title
+	p.X.Label.Text = axisOne
+	p.Y.Label.Text = axisTwo
 
-	err = plotutil.AddLinePoints(p, "First", data)
+	err = plotutil.AddLinePoints(p, "Data", data)
 
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("Failed to draw plot: %v", err)
 	}
 
 	// Save the plot to a PNG file.
 	if err := p.Save(4*vg.Inch, 4*vg.Inch, "points.png"); err != nil {
-		panic(err)
+		return fmt.Errorf("Failed to save plot: %v", err)
 	}
+
+	return nil
 }
 
 // requirements:
