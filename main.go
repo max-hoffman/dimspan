@@ -1,6 +1,82 @@
 package main
 
-func main() {}
+import (
+	"fmt"
+
+	"github.com/gonum/plot"
+	"github.com/gonum/plot/plotter"
+	"github.com/gonum/plot/plotutil"
+	"github.com/gonum/plot/vg"
+	"github.com/sj14/ode"
+)
+
+func main() {
+	rawLorenz := createLorenzData()
+	formattedLorenz := formatPlotData(rawLorenz)
+	createSVG(formattedLorenz)
+}
+
+// The function to calculate
+func lorenz(t float64, y []float64) []float64 {
+	sigma := float64(10)
+	beta := float64(8 / 3)
+	rho := float64(28)
+
+	result := make([]float64, 3)
+	result[0] = sigma * (y[1] - y[0])
+	result[1] = y[0]*(rho-y[2]) - y[1]
+	result[2] = y[0]*y[1] - beta*y[2]
+
+	return result
+}
+
+func createLorenzData() [][]float64 {
+	// SIR Start Values
+	initCond := []float64{-8, 8, 27}
+
+	// Do the calculation
+	y := ode.EulerForward(.001, .001, 100, initCond, lorenz)
+
+	// Output the results to the console
+	for _, val := range y {
+		fmt.Println(val)
+	}
+
+	return y
+}
+
+func formatPlotData(data [][]float64) plotter.XYs {
+	pts := make(plotter.XYs, len(data))
+	for i := range pts {
+		pts[i].X = data[i][1]
+		pts[i].Y = data[i][2]
+		// pts[i].Z = data[i][2]
+	}
+
+	return pts
+}
+
+func createSVG(data plotter.XYs) {
+	p, err := plot.New()
+	if err != nil {
+		panic(err)
+	}
+
+	p.Title.Text = "Plotutil example"
+	p.X.Label.Text = "X"
+	p.Y.Label.Text = "Y"
+
+	err = plotutil.AddLinePoints(p, "First", data)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// Save the plot to a PNG file.
+	if err := p.Save(4*vg.Inch, 4*vg.Inch, "points.png"); err != nil {
+		panic(err)
+	}
+}
 
 // requirements:
 
