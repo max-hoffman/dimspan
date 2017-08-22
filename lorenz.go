@@ -8,9 +8,11 @@ import (
 )
 
 func lorenz(t float64, y []float64) []float64 {
-	sigma := float64(10)
-	beta := float64(8 / 3)
-	rho := float64(28)
+	const (
+		sigma = float64(10)
+		beta  = float64(8 / 3)
+		rho   = float64(28)
+	)
 
 	result := make([]float64, 3)
 	result[0] = sigma * (y[1] - y[0])
