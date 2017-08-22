@@ -1,14 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"log"
-
-	"github.com/gonum/plot"
-	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/plotutil"
-	"github.com/gonum/plot/vg"
-	"github.com/sj14/ode"
 )
 
 func main() {
@@ -18,65 +11,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Create sample plot failed with error: %v", err)
 	}
-}
-
-func lorenz(t float64, y []float64) []float64 {
-	sigma := float64(10)
-	beta := float64(8 / 3)
-	rho := float64(28)
-
-	result := make([]float64, 3)
-	result[0] = sigma * (y[1] - y[0])
-	result[1] = y[0]*(rho-y[2]) - y[1]
-	result[2] = y[0]*y[1] - beta*y[2]
-
-	return result
-}
-
-func createLorenzData() [][]float64 {
-	initCond := []float64{-8, 8, 27}
-
-	y := ode.RungeKutta4(.001, .001, 100, initCond, lorenz)
-
-	// for _, val := range y {
-	// 	fmt.Println(val)
-	// }
-
-	return y
-}
-
-func formatPlotData(data [][]float64) plotter.XYs {
-	pts := make(plotter.XYs, len(data))
-	for i := range pts {
-		pts[i].X = data[i][1]
-		pts[i].Y = data[i][2]
-		// pts[i].Z = data[i][2]
-	}
-	return pts
-}
-
-func createSVG(data plotter.XYs, title, axisOne, axisTwo string) error {
-	p, err := plot.New()
-	if err != nil {
-		return fmt.Errorf("Create new plot error: %v", err)
-	}
-
-	p.Title.Text = title
-	p.X.Label.Text = axisOne
-	p.Y.Label.Text = axisTwo
-
-	err = plotutil.AddLinePoints(p, "Data", data)
-
-	if err != nil {
-		return fmt.Errorf("Failed to draw plot: %v", err)
-	}
-
-	// Save the plot to a PNG file.
-	if err := p.Save(4*vg.Inch, 4*vg.Inch, "points.png"); err != nil {
-		return fmt.Errorf("Failed to save plot: %v", err)
-	}
-
-	return nil
 }
 
 // requirements:
