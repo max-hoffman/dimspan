@@ -6,7 +6,8 @@ import (
 
 func main() {
 	rawLorenz := createLorenzData()
-	formattedLorenz := formatPlotData(rawLorenz)
+	noisyLorenz := addNoise(rawLorenz, 5)
+	formattedLorenz := formatPlotData(noisyLorenz)
 	err := createSVG(formattedLorenz, "Lorenz sample", "Y", "Z")
 	if err != nil {
 		log.Fatalf("Create sample plot failed with error: %v", err)

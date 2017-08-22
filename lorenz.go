@@ -32,12 +32,12 @@ func createLorenzData() [][]float64 {
 	return y
 }
 
-func addNoise(data [][]float64, value int) (noisyData [][]float64) {
+func addNoise(data [][]float64, value int) [][]float64 {
 	rand.Seed(time.Now().UTC().UnixNano())
 	for i := range data {
-		noisyData[i][1] += float64(rand.Intn(value))
-		noisyData[i][2] += float64(rand.Intn(value))
-		noisyData[i][3] += float64(rand.Intn(value))
+		data[i][1] += float64(rand.Intn(value))
+		data[i][2] += float64(rand.Intn(value))
+		data[i][3] += float64(rand.Intn(value))
 	}
-	return noisyData
+	return data
 }
