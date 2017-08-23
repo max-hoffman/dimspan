@@ -7,28 +7,53 @@ import (
 
 func main() {
 	rawLorenz := createLorenzData()
-	noisyLorenz := addNoise(rawLorenz, 5)
-
-	formattedLorenz := formatPlotData(noisyLorenz)
-	err := createSVG(formattedLorenz, "Lorenz sample", "Y", "Z")
+	formattedLorenz := formatPlotData(rawLorenz)
+	err := createSVG(formattedLorenz, "Lorenz sample", "lorenz.png", "Y", "Z")
 	if err != nil {
 		log.Fatalf("Create sample plot failed with error: %v", err)
 	}
+
+	noisyLorenz := addNoise(rawLorenz, 5)
+	formattedNoisyLorenz := formatPlotData(noisyLorenz)
+	err = createSVG(formattedNoisyLorenz, "Noisy Lorenz sample", "noisy-lorenz.png", "Y", "Z")
+	if err != nil {
+		log.Fatalf("Create sample plot failed with error: %v", err)
+	}
+
+	const (
+		rowLength       = 1000
+		numberOfSVGRows = 3
+	)
 
 	var singleVarStream []float64
 	for _, tuple := range noisyLorenz {
 		singleVarStream = append(singleVarStream, tuple[1])
 	}
 
-	s, u, v, err := henkelSVD(singleVarStream, 10)
+	s, u, v, err := henkelSVD(singleVarStream, rowLength)
 	if err != nil {
 		log.Fatalf("Failed to perform SVD on data: %v\n", err)
 	}
+
+	var lorenzSVGData [][]float64
+	for i := 0; i < numberOfSVGRows; i++ {
+		lorenzSVGData = append(lorenzSVGData, []float64{})
+		currentVec := v.ColView(i)
+		for row := 0; row < currentVec.Len(); row++ {
+			// these are vectors, so row/col are swapped now
+			lorenzSVGData[i] = append(lorenzSVGData[i], currentVec.At(row, 0))
+		}
+	}
+
+	formattedSVGLorenz := formatPlotData(lorenzSVGData)
+	err = createSVG(formattedSVGLorenz, "Lorenz after SVG", "lorenz-svg.png", "Y", "Z")
+	if err != nil {
+		log.Fatalf("Create sample plot failed with error: %v", err)
+	}
+
 	fmt.Printf("s: %v\n", s)
 	fmt.Printf("u: %v\n", u)
-	for _, val := range v {
-		fmt.Println(val)
-	}
+	fmt.Printf("%v\n", lorenzSVGData)
 }
 
 // requirements:
