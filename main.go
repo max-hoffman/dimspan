@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -21,8 +20,8 @@ func main() {
 	}
 
 	const (
-		rowLength       = 1000
-		numberOfSVGRows = 3
+		rowLength   = 5000
+		vectorCount = 3
 	)
 
 	var singleVarStream []float64
@@ -30,30 +29,34 @@ func main() {
 		singleVarStream = append(singleVarStream, tuple[1])
 	}
 
-	s, u, v, err := henkelSVD(singleVarStream, rowLength)
+	// s, u, v, err := henkelSVD(singleVarStream, rowLength)
+	_, _, v, err := henkelSVD(singleVarStream, rowLength)
 	if err != nil {
 		log.Fatalf("Failed to perform SVD on data: %v\n", err)
 	}
 
 	var lorenzSVGData [][]float64
-	for i := 0; i < numberOfSVGRows; i++ {
+	rowCount, colCount := v.Dims()
+	if vectorCount > colCount {
+		log.Fatalf("Requested more dimensions than SVD returned: %v, %v\n", colCount, vectorCount)
+	}
+	for row := 0; row < rowCount; row++ {
 		lorenzSVGData = append(lorenzSVGData, []float64{})
-		currentVec := v.ColView(i)
-		for row := 0; row < currentVec.Len(); row++ {
-			// these are vectors, so row/col are swapped now
-			lorenzSVGData[i] = append(lorenzSVGData[i], currentVec.At(row, 0))
+		currentRow := v.RowView(row)
+		for col := 0; col < vectorCount; col++ {
+			lorenzSVGData[row] = append(lorenzSVGData[row], currentRow.At(col, 0))
 		}
 	}
 
 	formattedSVGLorenz := formatPlotData(lorenzSVGData)
-	err = createSVG(formattedSVGLorenz, "Lorenz after SVG", "svd-lorenz.png", "Y", "Z")
+	err = createSVG(formattedSVGLorenz, "Lorenz after SVD", "svd-lorenz.png", "Y", "Z")
 	if err != nil {
 		log.Fatalf("Create sample plot failed with error: %v", err)
 	}
 
-	fmt.Printf("s: %v\n", s)
-	fmt.Printf("u: %v\n", u)
-	fmt.Printf("%v\n", lorenzSVGData)
+	// fmt.Printf("s: %v\n", s)
+	// fmt.Printf("u: %v\n", u)
+	// fmt.Printf("%v\n", lorenzSVGData)
 }
 
 // requirements:
