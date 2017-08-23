@@ -15,21 +15,21 @@ go install
 ## Create Docker Image
 + build a local binary (change myapp to name)
 ```
-docker run --rm -it -v "$GOPATH":/gopath -v "$(pwd)":/app -e "GOPATH=/gopath" -w /app golang:1.4.2 sh -c 'CGO_ENABLED=0 go build -a --installsuffix cgo --ldflags="-s" -o myapp'
+docker run --rm -it -v "$GOPATH":/gopath -v "$(pwd)":/app -e "GOPATH=/gopath" -w /app golang:1.4.2 sh -c 'CGO_ENABLED=0 go build -a --installsuffix cgo --ldflags="-s" -o dimspan'
 ```
 
 + build the docker image (change myapp)
 ```
-docker build -t myapp .
+docker build -t dimspan .
 ```
 
 + run the app
 ```
-docker run -p 8080:8080 myapp
+docker run -it dimspan
 ```
 
 + can push to registry if you want (change myapp)
 ```
-docker tag myapp maxhoffman/myapp:latest
-docker push maxhoffman/myapp:latest
+docker tag dimspan maxhoffman/dimspan:latest
+docker push maxhoffman/dimspan:latest
 ```

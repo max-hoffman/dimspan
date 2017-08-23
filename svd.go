@@ -7,10 +7,9 @@ import (
 	"github.com/gonum/matrix/mat64"
 )
 
-func decompose(data []float64, delta int) (s []float64, u, v *mat64.Dense, err error) {
-	// pad data
+func henkelSVD(data []float64, delta int) (s []float64, u, v *mat64.Dense, err error) {
 	for i := len(data); i < len(data)+len(data)%delta; i++ {
-		data[i] = 0
+		data = append(data, 0)
 	}
 	rows := len(data) / delta
 

@@ -1,16 +1,33 @@
 package main
 
 import (
+	"fmt"
 	"log"
 )
 
 func main() {
 	rawLorenz := createLorenzData()
 	noisyLorenz := addNoise(rawLorenz, 5)
+
 	formattedLorenz := formatPlotData(noisyLorenz)
 	err := createSVG(formattedLorenz, "Lorenz sample", "Y", "Z")
 	if err != nil {
 		log.Fatalf("Create sample plot failed with error: %v", err)
+	}
+
+	var singleVarStream []float64
+	for _, tuple := range noisyLorenz {
+		singleVarStream = append(singleVarStream, tuple[1])
+	}
+
+	s, u, v, err := henkelSVD(singleVarStream, 10)
+	if err != nil {
+		log.Fatalf("Failed to perform SVD on data: %v\n", err)
+	}
+	fmt.Printf("s: %v\n", s)
+	fmt.Printf("u: %v\n", u)
+	for _, val := range v {
+		fmt.Println(val)
 	}
 }
 
