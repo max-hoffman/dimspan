@@ -46,7 +46,7 @@ func main() {
 	}
 
 	formattedSVGLorenz := formatPlotData(lorenzSVGData)
-	err = createSVG(formattedSVGLorenz, "Lorenz after SVG", "lorenz-svg.png", "Y", "Z")
+	err = createSVG(formattedSVGLorenz, "Lorenz after SVG", "svd-lorenz.png", "Y", "Z")
 	if err != nil {
 		log.Fatalf("Create sample plot failed with error: %v", err)
 	}
