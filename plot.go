@@ -10,10 +10,11 @@ import (
 )
 
 func formatPlotData(data [][]float64) plotter.XYs {
+	fmt.Printf("%v\n", len(data))
 	pts := make(plotter.XYs, len(data))
 	for i := range pts {
-		pts[i].X = data[i][1]
-		pts[i].Y = data[i][2]
+		pts[i].X = data[i][0]
+		pts[i].Y = data[i][1]
 		// pts[i].Z = data[i][2]
 	}
 	return pts

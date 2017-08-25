@@ -1,7 +1,7 @@
 FROM iron/base
 WORKDIR /app
 # copy binary into image
-COPY myapp /app/
-ENTRYPOINT ["./myapp"]
+COPY dimspan /app/
+ENTRYPOINT ["./dimspan"]
 
 EXPOSE 8080

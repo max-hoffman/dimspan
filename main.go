@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 )
 
@@ -12,7 +13,7 @@ func main() {
 		log.Fatalf("Create sample plot failed with error: %v", err)
 	}
 
-	noisyLorenz := addNoise(rawLorenz, 5)
+	noisyLorenz := addNoise(rawLorenz, 1)
 	formattedNoisyLorenz := formatPlotData(noisyLorenz)
 	err = createSVG(formattedNoisyLorenz, "Noisy Lorenz sample", "noisy-lorenz.png", "Y", "Z")
 	if err != nil {
@@ -20,8 +21,9 @@ func main() {
 	}
 
 	const (
-		rowLength   = 5000
+		rowLength   = 10000
 		vectorCount = 3
+		rows        = 10
 	)
 
 	var singleVarStream []float64
@@ -30,7 +32,7 @@ func main() {
 	}
 
 	// s, u, v, err := henkelSVD(singleVarStream, rowLength)
-	_, _, v, err := henkelSVD(singleVarStream, rowLength)
+	s, _, v, err := henkelSVD(singleVarStream, rowLength, rows)
 	if err != nil {
 		log.Fatalf("Failed to perform SVD on data: %v\n", err)
 	}
@@ -54,7 +56,7 @@ func main() {
 		log.Fatalf("Create sample plot failed with error: %v", err)
 	}
 
-	// fmt.Printf("s: %v\n", s)
+	fmt.Printf("s: %v\n", s)
 	// fmt.Printf("u: %v\n", u)
 	// fmt.Printf("%v\n", lorenzSVGData)
 }
@@ -78,6 +80,7 @@ func main() {
 // - sdl as a backup, but will be harder
 // - worst case scenario just make it with D3 or React
 
+// -> I'm here
 // 5. get derivatives of the n input rows
 // - use "total-variation regularized derivative," need to figure out what that is
 

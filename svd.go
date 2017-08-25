@@ -7,14 +7,21 @@ import (
 	"github.com/gonum/matrix/mat64"
 )
 
-func henkelSVD(data []float64, delta int) (s []float64, u, v *mat64.Dense, err error) {
-	for i := len(data); i < len(data)+len(data)%delta; i++ {
-		data = append(data, 0)
+func henkelSVD(data []float64, delta, rows int) (s []float64, u, v *mat64.Dense, err error) {
+	// for i := len(data); i < len(data)+len(data)%delta; i++ {
+	// 	data = append(data, 0)
+	// }
+	// rows := len(data) / delta
+
+	var henkel []float64
+	for i := 0; i < rows; i++ {
+		for j := i; j < delta+i; j++ {
+			henkel = append(henkel, data[j])
+		}
 	}
-	rows := len(data) / delta
 
 	var svd mat64.SVD
-	ok := svd.Factorize(mat64.NewDense(rows, delta, data), matrix.SVDThin)
+	ok := svd.Factorize(mat64.NewDense(rows, delta, henkel), matrix.SVDThin)
 	if !ok {
 		s, u, v, err = nil, nil, nil, fmt.Errorf("failed to perform SVD on the input data")
 		return
