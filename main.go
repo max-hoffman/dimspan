@@ -116,4 +116,5 @@ func main() {
 //     end
 // end
 
+// 6c. Fnction to print optimization result as string (sparseGalerkin)
 // 6. clean up and document before moving to neuron tests
