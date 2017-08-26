@@ -37,7 +37,7 @@ func createSVG(data plotter.XYs, title, file, axisOne, axisTwo string) error {
 	}
 
 	// Save the plot to a PNG file.
-	if err := p.Save(4*vg.Inch, 4*vg.Inch, "./plots/"+file); err != nil {
+	if err := p.Save(4*vg.Inch, 4*vg.Inch, "plots/"+file); err != nil {
 		return fmt.Errorf("Failed to save plot: %v", err)
 	}
 
