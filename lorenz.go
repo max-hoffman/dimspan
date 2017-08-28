@@ -25,7 +25,7 @@ func lorenz(t float64, y []float64) []float64 {
 func createLorenzData() [][]float64 {
 	initCond := []float64{-8, 8, 27}
 
-	y := ode.RungeKutta4(.001, .001, 1000, initCond, lorenz)
+	y := ode.RungeKutta4(.001, .001, 100, initCond, lorenz)
 
 	// for _, val := range y {
 	// 	fmt.Println(val)

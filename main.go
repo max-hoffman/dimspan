@@ -21,9 +21,10 @@ func main() {
 	}
 
 	const (
-		rowLength   = 10000
+		rowLength   = 1000
 		vectorCount = 3
 		rows        = 10
+		dt          = .01
 	)
 
 	var singleVarStream []float64
@@ -59,6 +60,9 @@ func main() {
 	fmt.Printf("s: %v\n", s)
 	// fmt.Printf("u: %v\n", u)
 	// fmt.Printf("%v\n", lorenzSVGData)
+
+	dV := derivateMatrix(lorenzSVGData, dt)
+	fmt.Print(len(dV))
 }
 
 // requirements:
