@@ -8,10 +8,7 @@ import (
 )
 
 func henkelSVD(data []float64, delta, rows int) (s []float64, u, v *mat64.Dense, err error) {
-	// for i := len(data); i < len(data)+len(data)%delta; i++ {
-	// 	data = append(data, 0)
-	// }
-	// rows := len(data) / delta
+	// mat64.Dense.VFromSVD would be easier
 
 	var henkel []float64
 	for i := 0; i < rows; i++ {
