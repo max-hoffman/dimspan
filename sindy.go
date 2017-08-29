@@ -26,6 +26,28 @@ func derivateMatrix(data [][]float64, dt float64) [][]float64 {
 	return dV
 }
 
+// param: svd V basis
+// returns: dx
+func derivate(data [][]float64, dt float64, n int) *mat64.Dense {
+	// dV(i-2,k) = (1/(12*dt))*(-V(i+2,k)+8*V(i+1,k)-8*V(i-1,k)+V(i-2,k))
+	rowCount := len(data)
+	dV := mat64.NewDense(rowCount, n, nil)
+	for r := 0; r < rowCount; r++ {
+		for c := 0; c < n; c++ {
+			if r < 2 || r >= rowCount {
+				dV.Set(r, c, 0)
+				continue
+			}
+			deltaVal := (1 / (12 * dt)) * (-data[r+2][c] + 8*data[r+1][c] - 8 - data[r-1][c] + data[r-2][c])
+			dV.Set(r, c, deltaVal)
+		}
+	}
+
+	// fmt.Printf("rows in dV: %v\n", len(dV))
+	// fmt.Printf("cols in dV: %v\n", len(dV[0]))
+	return dV
+}
+
 // params: x, n, polyorder and usesine
 // returns: Theta
 func poolData(data [][]float64, n, polyorder int, usesine bool) *mat64.Dense {
@@ -122,9 +144,24 @@ func poolData(data [][]float64, n, polyorder int, usesine bool) *mat64.Dense {
 
 // params: Theta, dx, lambda and n
 // returns: Xi
-// func PLS() {
+func pls(dx, theta *mat64.Dense) (*mat64.Dense, error) {
+	psi := mat64.NewDense(20, 3, nil)
 
-// }
+	//init psi with Solve(theta, dx)
+	err := psi.Solve(dx, theta)
+	if err != nil {
+		return nil, fmt.Errorf("failed to perform least-squares regression with error: %v", err)
+	}
+
+	for i := 0; i < 10; i++ {
+		// find small indices
+
+		// set them equal to zero
+
+		// perform solve on the remaining big indices
+	}
+	return psi, nil
+}
 
 // func stringifyXi() (solution string) {
 
