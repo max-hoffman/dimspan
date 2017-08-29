@@ -144,25 +144,77 @@ func poolData(data [][]float64, n, polyorder int, usesine bool) *mat64.Dense {
 
 // params: Theta, dx, lambda and n
 // returns: Xi
-func pls(dx, theta *mat64.Dense) (*mat64.Dense, error) {
-	psi := mat64.NewDense(20, 3, nil)
+func pls(dx, theta *mat64.Dense, lambda float64) (*mat64.Dense, error) {
+	m, n := dx.Dims()
+	_, p := theta.Dims()
+	xi := mat64.NewDense(p, n, nil)
+	var tempXi mat64.Dense
 
-	//init psi with Solve(theta, dx)
-	err := psi.Solve(dx, theta)
+	//initial guess for xi
+	err := xi.Solve(dx, theta)
 	if err != nil {
-		return nil, fmt.Errorf("failed to perform least-squares regression with error: %v", err)
+		return nil, fmt.Errorf("least-squares regression failed with error: %v", err)
 	}
 
-	for i := 0; i < 10; i++ {
-		// find small indices
+	// optimize
+	for col := 0; col < n; col++ {
+		for i := 0; i < 10; i++ {
 
-		// set them equal to zero
+			// find small indices, set them equal to zero
+			bigIdx := []int{}
+			for row := 0; row < p; row++ {
+				val := xi.At(row, col)
+				if val < lambda && val > -lambda {
+					xi.Set(row, col, 0)
+				}
+				bigIdx = append(bigIdx, col)
+			}
 
-		// perform solve on the remaining big indices
+			// collect theta columns that were large in xi
+			tempTheta := mat64.NewDense(m, len(bigIdx), nil)
+			for i, colIdx := range bigIdx {
+				newCol := getRawCol(theta, colIdx)
+				tempTheta.SetCol(i, newCol)
+			}
+
+			// get new approximations for xi
+			err := tempXi.Solve(dx, tempTheta)
+			if err != nil {
+				return nil, fmt.Errorf("least-squares regression failed in cycle %v with error: %v", i, err)
+			}
+
+			// replace updated approximations for xi
+			// MARK : do the indexes still match up with the correct rows?
+			for idx, val := range bigIdx {
+				xi.SetRow(val, tempXi.RawRowView(idx))
+			}
+		}
 	}
-	return psi, nil
+	return xi, nil
 }
 
 // func stringifyXi() (solution string) {
 
 // }
+
+func getRawCol(m *mat64.Dense, col int) (newCol []float64) {
+	rowCount, _ := m.Dims()
+	for row := 0; row < rowCount; row++ {
+		newCol = append(newCol, m.At(row, col))
+	}
+	return
+}
+
+func regularize(i, j int, v float64) float64 {
+	var lambda float64
+	switch j {
+	case 0:
+		lambda = .01
+	default:
+		lambda = .2
+	}
+	if v < lambda && v > -lambda {
+		return 0
+	}
+	return v
+}
