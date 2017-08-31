@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"math"
+
+	"gonum.org/v1/gonum/mat"
 
 	"github.com/gonum/matrix/mat64"
 )
@@ -26,8 +29,7 @@ func derivateMatrix(data [][]float64, dt float64) [][]float64 {
 	return dV
 }
 
-// param: svd V basis
-// returns: dx
+// use this one
 func derivate(data [][]float64, dt float64, n int) *mat64.Dense {
 	// dV(i-2,k) = (1/(12*dt))*(-V(i+2,k)+8*V(i+1,k)-8*V(i-1,k)+V(i-2,k))
 	rowCount := len(data)
@@ -138,9 +140,23 @@ func poolData(data [][]float64, n, polyorder int, usesine bool) *mat64.Dense {
 	return theta
 }
 
-// func normalize(data [][]float64) [][]float64 {
+func normalize(m *mat.Dense) {
+	rowCount, colCount := m.Dims()
 
-// }
+	for c := 0; c < colCount; c++ {
+		avg := 0.0
+		for r := 0; r < rowCount; r++ {
+			avg += m.At(r, c) * m.At(r, c)
+		}
+
+		avg = math.Sqrt(avg) / float64(rowCount)
+
+		for r := 0; r < rowCount; r++ {
+			temp := m.At(r, c) / float64(rowCount)
+			m.Set(r, c, temp)
+		}
+	}
+}
 
 // params: Theta, dx, lambda and n
 // returns: Xi
@@ -173,8 +189,8 @@ func pls(dx, theta *mat64.Dense, lambda float64) (*mat64.Dense, error) {
 			// collect theta columns that were large in xi
 			tempTheta := mat64.NewDense(m, len(bigIdx), nil)
 			for i, colIdx := range bigIdx {
-				newCol := getRawCol(theta, colIdx)
-				tempTheta.SetCol(i, newCol)
+				selectCol := getRawCol(theta, colIdx)
+				tempTheta.SetCol(i, selectCol)
 			}
 
 			// get new approximations for xi
