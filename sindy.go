@@ -9,10 +9,8 @@ import (
 	"github.com/gonum/matrix/mat64"
 )
 
-// param: svd V basis
-// returns: dx
+// deprecated, use version that return Dense matrix
 func derivateMatrix(data [][]float64, dt float64) [][]float64 {
-	// dV(i-2,k) = (1/(12*dt))*(-V(i+2,k)+8*V(i+1,k)-8*V(i-1,k)+V(i-2,k))
 	var dV [][]float64
 	for ridx, row := range data {
 		if ridx < 2 || ridx >= len(data)-2 {
@@ -29,11 +27,12 @@ func derivateMatrix(data [][]float64, dt float64) [][]float64 {
 	return dV
 }
 
-// use this one
+// Obtain dV for the least-squares optimization using forth order
+// approximation (first and last two columns will be zero vectors)
 func derivate(data [][]float64, dt float64, n int) *mat64.Dense {
-	// dV(i-2,k) = (1/(12*dt))*(-V(i+2,k)+8*V(i+1,k)-8*V(i-1,k)+V(i-2,k))
 	rowCount := len(data)
 	dV := mat64.NewDense(rowCount, n, nil)
+
 	for r := 0; r < rowCount; r++ {
 		for c := 0; c < n; c++ {
 			if r < 2 || r >= rowCount {
@@ -50,8 +49,8 @@ func derivate(data [][]float64, dt float64, n int) *mat64.Dense {
 	return dV
 }
 
-// params: x, n, polyorder and usesine
-// returns: Theta
+// Return a matrix whose rows represent the number of time points,
+// and whose columns represent the search space for explicit dynamics
 func poolData(data [][]float64, n, polyorder int, usesine bool) (theta *mat64.Dense) {
 	rowCount := len(data)
 	var colCount int
@@ -140,7 +139,7 @@ func poolData(data [][]float64, n, polyorder int, usesine bool) (theta *mat64.De
 		}
 	}
 
-	//sines
+	// harmonics
 	if usesine {
 		for i := 0; i < n; i++ {
 			for k := 0; k < harmonicCount; k++ {
@@ -156,6 +155,7 @@ func poolData(data [][]float64, n, polyorder int, usesine bool) (theta *mat64.De
 	return theta
 }
 
+// Normalizes matrix using column vector norms
 func normalize(m *mat.Dense) {
 	rowCount, colCount := m.Dims()
 
@@ -174,8 +174,7 @@ func normalize(m *mat.Dense) {
 	}
 }
 
-// params: Theta, dx, lambda and n
-// returns: Xi
+// Perform least-squares regression with strict regularization
 func pls(dx, theta *mat64.Dense, lambda float64) (*mat64.Dense, error) {
 	m, n := dx.Dims()
 	_, p := theta.Dims()
