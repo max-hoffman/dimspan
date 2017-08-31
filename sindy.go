@@ -52,11 +52,19 @@ func derivate(data [][]float64, dt float64, n int) *mat64.Dense {
 
 // params: x, n, polyorder and usesine
 // returns: Theta
-func poolData(data [][]float64, n, polyorder int, usesine bool) *mat64.Dense {
+func poolData(data [][]float64, n, polyorder int, usesine bool) (theta *mat64.Dense) {
 	rowCount := len(data)
-	colCount := 1 + n + (n * (n + 1) / 2) + (n * (n + 1) * (n + 2) / (2 * 3)) + 11
-	theta := mat64.NewDense(rowCount, colCount, nil)
+	var colCount int
+	harmonicCount := 10
 	colIdx := 0
+
+	if usesine {
+		colCount = 1 + n + (n * (n + 1) / 2) + (n * (n + 1) * (n + 2) / (2 * 3)) + 11 + 2*harmonicCount
+	} else {
+		colCount = 1 + n + (n * (n + 1) / 2) + (n * (n + 1) * (n + 2) / (2 * 3)) + 11
+	}
+
+	theta = mat64.NewDense(rowCount, colCount, nil)
 
 	// zero order
 	for row := range data {
@@ -133,9 +141,17 @@ func poolData(data [][]float64, n, polyorder int, usesine bool) *mat64.Dense {
 	}
 
 	//sines
-	// if usesine {
-
-	// }
+	if usesine {
+		for i := 0; i < n; i++ {
+			for k := 0; k < harmonicCount; k++ {
+				for ridx, row := range data {
+					theta.Set(ridx, colIdx, math.Sin(float64(k)*row[i]))
+					theta.Set(ridx, colIdx+1, math.Cos(float64(k)*row[i]))
+				}
+				colIdx += 2
+			}
+		}
+	}
 
 	return theta
 }
@@ -209,6 +225,9 @@ func pls(dx, theta *mat64.Dense, lambda float64) (*mat64.Dense, error) {
 	return xi, nil
 }
 
+// TODO: write function that takes optimized Xi, and converts columns into
+// 		a more legible format for reading out the dynamical system
+//
 // func stringifyXi() (solution string) {
 
 // }
@@ -219,18 +238,4 @@ func getRawCol(m *mat64.Dense, col int) (newCol []float64) {
 		newCol = append(newCol, m.At(row, col))
 	}
 	return
-}
-
-func regularize(i, j int, v float64) float64 {
-	var lambda float64
-	switch j {
-	case 0:
-		lambda = .01
-	default:
-		lambda = .2
-	}
-	if v < lambda && v > -lambda {
-		return 0
-	}
-	return v
 }
